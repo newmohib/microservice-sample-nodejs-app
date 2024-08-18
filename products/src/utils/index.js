@@ -1,7 +1,12 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 
-const { APP_SECRET } = require("../config");
+const {
+  APP_SECRET,
+  CUSTOMER_SERVICE_URL,
+  SHOPPING_SERVICE_URL,
+} = require("../config");
 
 //Utility functions
 module.exports.GenerateSalt = async () => {
@@ -48,4 +53,12 @@ module.exports.FormateData = (data) => {
   } else {
     throw new Error("Data Not found!");
   }
+};
+
+module.exports.PublishCustomerEvent = (data) => {
+  axios.post(`${CUSTOMER_SERVICE_URL}/app-events`, { payload: data });
+};
+
+module.exports.PublishShoppingEvent = (data) => {
+  axios.post(`${SHOPPING_SERVICE_URL}/app-events`, { payload: data });
 };
