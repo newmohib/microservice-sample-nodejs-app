@@ -1,16 +1,16 @@
-// const ProductService = require("../../services/product-service");
+const ShoppingService = require("../../services/shopping-service");
 
 module.exports = (app) => {
-  // const service = new ProductService();
+  const service = new ShoppingService();
   app.post("/app-events", async (req, res, next) => {
-    console.log("====== Product Service  Received Event =======");
+    console.log("====== Shopping Service  Received Event =======");
     try {
       const { payload } = req.body;
       if (payload) {
-        //await service.SubscribeEvents(payload);
+        service.SubscribeEvents(payload);
         return res.status(200).json(payload);
       } else {
-        // await service.SubscribeEvents({});
+        console.log("Payload is empty", { payload });
         return res.status(200).json({});
       }
     } catch (err) {
