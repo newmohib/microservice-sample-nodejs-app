@@ -1,4 +1,9 @@
-const { CustomerModel, ProductModel, OrderModel } = require("../models");
+const {
+  CustomerModel,
+  ProductModel,
+  OrderModel,
+  CartModel,
+} = require("../models");
 const { v4: uuidv4 } = require("uuid");
 const { APIError, BadRequestError } = require("../../utils/app-errors");
 
@@ -19,18 +24,75 @@ class ShoppingRepository {
     }
   }
 
+  async Cart(customerId, product, qty) {
+    try {
+      const cartItems = await CartModel.find({ customerId });
+      if (cartItems) {
+        return cartItems;
+      }
+      throw new Error("Data Not Found");
+    } catch (err) {
+      throw err;
+      // throw APIError(
+      //   "API Error",
+      //   STATUS_CODES.INTERNAL_ERROR,
+      //   "Unable to Find Category"
+      // );
+    }
+  }
+
+  async AddToCart(customerId, item, qty, isRemove) {
+    try {
+      const cart = await CartModel.findOne({ customerId });
+      const { _id } = item;
+      if (cart) {
+        const isExist = false;
+        let cartItems = cart.items;
+        if (cartItems.length > 0) {
+          cartItems.map((item) => {
+            if (item.product._id.toString() === _id.toString()) {
+              if (isRemove) {
+                cartItems.splice(cartItems.indexOf(item), 1);
+              } else {
+                item.unit = qty;
+              }
+              isExist = true;
+            }
+          });
+          if (!isExist && !isRemove) {
+            cartItems.push({
+              product: { ...item },
+              unit: qty,
+            });
+          }
+          cart.items = cartItems;
+          return await cart.save();
+        } else {
+          return await CartModel.create({
+            customerId,
+            items: [{ product: { ...item }, unit: qty }],
+          });
+        }
+      }
+    } catch (err) {
+      throw APIError(
+        "API Error",
+        STATUS_CODES.INTERNAL_ERROR,
+        "Unable to Create Cart"
+      );
+    }
+  }
+
   async CreateNewOrder(customerId, txnId) {
     //check transaction for payment Status
 
     try {
-      const profile = await CustomerModel.findById(customerId).populate(
-        "cart.product"
-      );
+      const cart = await CartModel.findById(customerId);
 
-      if (profile) {
+      if (cart) {
         let amount = 0;
 
-        let cartItems = profile.cart;
+        let cartItems = cart.items;
 
         if (cartItems.length > 0) {
           //process Order
@@ -49,14 +111,9 @@ class ShoppingRepository {
             items: cartItems,
           });
 
-          profile.cart = [];
-
-          order.populate("items.product").execPopulate();
+          cart.items = [];
           const orderResult = await order.save();
-
-          profile.orders.push(orderResult);
-
-          await profile.save();
+          await cart.save();
 
           return orderResult;
         }
