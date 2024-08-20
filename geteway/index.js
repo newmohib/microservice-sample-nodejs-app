@@ -16,8 +16,8 @@ app.use(cors());
 
 // app.use("/customer", proxy("localhost:8001", { proxyReqOptDecorator: () => ({ timeout: 10000 }) }));
 app.use("/customer", proxy("localhost:8002"));
-app.use("/shopping", proxy("localhost:8003"));
-app.use("/", proxy("localhost:8004")); // product
+app.use("/shopping", proxy("localhost:8004"));
+app.use("/", proxy("localhost:8003")); // product
 
 // listerning port
 app.listen(port, () => {
