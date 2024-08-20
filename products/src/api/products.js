@@ -70,6 +70,7 @@ module.exports = (app) => {
         { productId: req.body, qty: 1 },
         "ADD_TO_WISHLIST"
       );
+      console.log({data});
       PublishCustomerEvent(data);
       return res.status(200).json(data.data.product);
     } catch (err) {
