@@ -34,8 +34,10 @@ module.exports = (app) => {
 
   app.get("/cart", UserAuth, async (req, res, next) => {
     const { _id } = req.user;
+    console.log("_id", _id);
     try {
       const { data } = await service.getCart(_id);
+      console.log("data", data);
       return res.status(200).json(data);
     } catch (err) {
       next(err);
