@@ -5,7 +5,7 @@ const {
   CartModel,
 } = require("../models");
 const { v4: uuidv4 } = require("uuid");
-const { APIError, BadRequestError } = require("../../utils/app-errors");
+const { APIError, STATUS_CODES } = require("../../utils/app-errors");
 
 //Dealing with data base operations
 class ShoppingRepository {
@@ -32,54 +32,94 @@ class ShoppingRepository {
       }
       throw new Error("Data Not Found");
     } catch (err) {
-      throw err;
-      // throw APIError(
-      //   "API Error",
-      //   STATUS_CODES.INTERNAL_ERROR,
-      //   "Unable to Find Category"
-      // );
-    }
-  }
-
-  async AddToCart(customerId, item, qty, isRemove) {
-    try {
-      const cart = await CartModel.findOne({ customerId });
-      const { _id } = item;
-      if (cart) {
-        const isExist = false;
-        let cartItems = cart.items;
-        if (cartItems.length > 0) {
-          cartItems.map((item) => {
-            if (item.product._id.toString() === _id.toString()) {
-              if (isRemove) {
-                cartItems.splice(cartItems.indexOf(item), 1);
-              } else {
-                item.unit = qty;
-              }
-              isExist = true;
-            }
-          });
-          if (!isExist && !isRemove) {
-            cartItems.push({
-              product: { ...item },
-              unit: qty,
-            });
-          }
-          cart.items = cartItems;
-          return await cart.save();
-        } else {
-          return await CartModel.create({
-            customerId,
-            items: [{ product: { ...item }, unit: qty }],
-          });
-        }
-      }
-    } catch (err) {
+      // throw err;
       throw APIError(
         "API Error",
         STATUS_CODES.INTERNAL_ERROR,
-        "Unable to Create Cart"
+        "Unable to Find Cart"
       );
+    }
+  }
+
+  // async AddToCart(customerId, item, qty, isRemove) {
+  //   try {
+  //     const cart = await CartModel.findOne({ customerId });
+  //     const { _id } = item;
+  //     if (cart) {
+  //       const isExist = false;
+  //       let cartItems = cart.items;
+  //       if (cartItems.length > 0) {
+  //         cartItems.map((item) => {
+  //           if (item.product._id.toString() === _id.toString()) {
+  //             if (isRemove) {
+  //               cartItems.splice(cartItems.indexOf(item), 1);
+  //             } else {
+  //               item.unit = qty;
+  //             }
+  //             isExist = true;
+  //           }
+  //         });
+  //         if (!isExist && !isRemove) {
+  //           cartItems.push({
+  //             product: { ...item },
+  //             unit: qty,
+  //           });
+  //         }
+  //         cart.items = cartItems;
+  //         return await cart.save();
+  //       } else {
+  //         return await CartModel.create({
+  //           customerId,
+  //           items: [{ product: { ...item }, unit: qty }],
+  //         });
+  //       }
+  //     }
+  //   } catch (err) {
+  //     throw new APIError(
+  //       "API Error",
+  //       STATUS_CODES.INTERNAL_ERROR,
+  //       "Unable to Create Cart"
+  //     );
+  //   }
+  // }
+
+  async AddCartItem(customerId, item, qty, isRemove) {
+    // return await CartModel.deleteMany();
+
+    const cart = await CartModel.findOne({ customerId: customerId });
+
+    const { _id } = item;
+
+    if (cart) {
+      let isExist = false;
+
+      let cartItems = cart.items;
+
+      if (cartItems.length > 0) {
+        cartItems.map((item) => {
+          if (item.product._id.toString() === _id.toString()) {
+            if (isRemove) {
+              cartItems.splice(cartItems.indexOf(item), 1);
+            } else {
+              item.unit = qty;
+            }
+            isExist = true;
+          }
+        });
+      }
+
+      if (!isExist && !isRemove) {
+        cartItems.push({ product: { ...item }, unit: qty });
+      }
+
+      cart.items = cartItems;
+
+      return await cart.save();
+    } else {
+      return await CartModel.create({
+        customerId,
+        items: [{ product: { ...item }, unit: qty }],
+      });
     }
   }
 

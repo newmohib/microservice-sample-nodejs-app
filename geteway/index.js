@@ -16,7 +16,27 @@ app.use(cors());
 
 // app.use("/customer", proxy("localhost:8001", { proxyReqOptDecorator: () => ({ timeout: 10000 }) }));
 app.use("/customer", proxy("localhost:8002"));
-app.use("/shopping", proxy("localhost:8004"));
+// app.use("/shopping", proxy("localhost:8004"));
+app.use(
+  "/shopping",
+  proxy("http://localhost:8004", {
+    proxyErrorHandler: function (err, res, next) {
+      console.error("Proxy error:", err);
+
+      // Check for specific error codes and respond accordingly
+      if (err.code === "ECONNREFUSED" || err.code === "ENOTFOUND") {
+        res
+          .status(502)
+          .json({ message: "Target server not found or unavailable" });
+      } else {
+        // Handle other errors
+        res
+          .status(500)
+          .json({ message: "An error occurred while processing your request" });
+      }
+    },
+  })
+);
 app.use("/", proxy("localhost:8003")); // product
 
 // listerning port

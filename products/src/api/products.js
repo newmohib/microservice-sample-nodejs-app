@@ -70,7 +70,7 @@ module.exports = (app) => {
         { productId: req.body, qty: 1 },
         "ADD_TO_WISHLIST"
       );
-      console.log({data});
+      console.log({ data });
       PublishCustomerEvent(data);
       return res.status(200).json(data.data.product);
     } catch (err) {
@@ -99,7 +99,7 @@ module.exports = (app) => {
     const { _id } = req.user;
 
     try {
-      const product = await service.GetProductById(_id);
+      // const product = await service.GetProductById(_id);
 
       const { data } = await service.GetProductPayload(
         _id,

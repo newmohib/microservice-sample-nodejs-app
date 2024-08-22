@@ -46,6 +46,7 @@ class ShoppingService {
         qty,
         isRemove
       );
+      console.log({ cartResult });
       return FormateData(cartResult);
     } catch (error) {
       throw error;
