@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 
-const { APP_SECRET } = require("../config");
+const { APP_SECRET, CUSTOMER_SERVICE_URL } = require("../config");
 
 //Utility functions
 module.exports.GenerateSalt = async () => {

@@ -1,5 +1,6 @@
 const { ShoppingRepository } = require("../database");
 const { FormateData } = require("../utils");
+const { APIError } = require("../utils/app-errors");
 
 // All Business logic will be here
 class ShoppingService {
@@ -23,9 +24,11 @@ class ShoppingService {
 
     try {
       const orderResult = await this.repository.CreateNewOrder(_id, txnNumber);
+      console.log({ orderResult });
       return FormateData(orderResult);
     } catch (err) {
-      throw new APIError("Data Not found", err);
+      console.log("PlaceOrder", { err });
+      throw err; // new APIError("Data Not found", err);
     }
   }
 

@@ -90,6 +90,7 @@ class ShoppingRepository {
     const cart = await CartModel.findOne({ customerId: customerId });
 
     const { _id } = item;
+    console.log({ cart, item }, cart);
 
     if (cart) {
       let isExist = false;
@@ -117,57 +118,98 @@ class ShoppingRepository {
 
       return await cart.save();
     } else {
-      return await CartModel.create({
+      const cartResutl = await CartModel.create({
         customerId,
         items: [{ product: { ...item }, unit: qty }],
       });
+      console.log({ cartResutl });
+      return cartResutl;
     }
   }
 
+  // async CreateNewOrder(customerId, txnId) {
+  //   //check transaction for payment Status
+
+  //   try {
+  //     const cart = await CartModel.findOne(customerId);
+
+  //     if (cart) {
+  //       let amount = 0;
+
+  //       let cartItems = cart.items;
+
+  //       if (cartItems.length > 0) {
+  //         //process Order
+  //         cartItems.map((item) => {
+  //           amount += parseInt(item.product.price) * parseInt(item.unit);
+  //         });
+
+  //         const orderId = uuidv4();
+
+  //         const order = new OrderModel({
+  //           orderId,
+  //           customerId,
+  //           amount,
+  //           txnId,
+  //           status: "received",
+  //           items: cartItems,
+  //         });
+
+  //         cart.items = [];
+
+  //         const orderResult = await order.save();
+  //         await cart.save();
+  //         console.log({ orderResult });
+  //         return orderResult;
+  //       }
+  //     }
+
+  //     return {};
+  //   } catch (err) {
+  //     throw new APIError(
+  //       "API Error",
+  //       STATUS_CODES.INTERNAL_ERROR,
+  //       "Unable to Find Category"
+  //     );
+  //   }
+  // }
+
   async CreateNewOrder(customerId, txnId) {
-    //check transaction for payment Status
+    //required to verify payment through TxnId
 
-    try {
-      const cart = await CartModel.findById(customerId);
+    const cart = await CartModel.findOne({ customerId: customerId });
 
-      if (cart) {
-        let amount = 0;
+    if (cart) {
+      let amount = 0;
 
-        let cartItems = cart.items;
+      let cartItems = cart.items;
 
-        if (cartItems.length > 0) {
-          //process Order
-          cartItems.map((item) => {
-            amount += parseInt(item.product.price) * parseInt(item.unit);
-          });
+      if (cartItems.length > 0) {
+        //process Order
 
-          const orderId = uuidv4();
+        cartItems.map((item) => {
+          amount += parseInt(item.product.price) * parseInt(item.unit);
+        });
 
-          const order = new OrderModel({
-            orderId,
-            customerId,
-            amount,
-            txnId,
-            status: "received",
-            items: cartItems,
-          });
+        const orderId = uuidv4();
 
-          cart.items = [];
-          const orderResult = await order.save();
-          await cart.save();
+        const order = new OrderModel({
+          orderId,
+          customerId,
+          amount,
+          status: "received",
+          items: cartItems,
+        });
 
-          return orderResult;
-        }
+        cart.items = [];
+
+        const orderResult = await order.save();
+        await cart.save();
+        return orderResult;
       }
-
-      return {};
-    } catch (err) {
-      throw APIError(
-        "API Error",
-        STATUS_CODES.INTERNAL_ERROR,
-        "Unable to Find Category"
-      );
     }
+
+    return {};
   }
 }
 
