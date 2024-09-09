@@ -1,11 +1,14 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const axios = require("axios");
+// const axios = require("axios");
+const amqplib = require("amqplib");
 
 const {
   APP_SECRET,
-  CUSTOMER_SERVICE_URL,
-  SHOPPING_SERVICE_URL,
+  // CUSTOMER_SERVICE_URL,
+  // SHOPPING_SERVICE_URL,
+  MESSAGE_BROKER_URL,
+  EXCHANGE_NAME,
 } = require("../config");
 
 //Utility functions
@@ -47,18 +50,72 @@ module.exports.ValidateSignature = async (req) => {
   }
 };
 
-module.exports.FormateData = (data) => {
-  if (data) {
-    return { data };
-  } else {
-    throw new Error("Data Not found!");
+// module.exports.FormateData = (data) => {
+//   if (data) {
+//     return { data };
+//   } else {
+//     throw new Error("Data Not found!");
+//   }
+// };
+
+// module.exports.PublishCustomerEvent = (data) => {
+//   axios.post(`${CUSTOMER_SERVICE_URL}/app-events`, { payload: data });
+// };
+
+// module.exports.PublishShoppingEvent = (data) => {
+//   axios.post(`${SHOPPING_SERVICE_URL}/app-events`, { payload: data });
+// };
+
+
+
+// ===============Message broker=========
+
+
+// crate a channel
+module.exports.CreateChannel = async ()=>{
+
+  try {
+    const conn = await amqplib.connect(MESSAGE_BROKER_URL);
+    const channel = await conn.createChannel();
+    await channel.assertQueue(EXCHANGE_NAME, 'direct', false);
+    return channel
+    
+  } catch (error) {
+    console.log("CreateChannel error", {error});
+    
+    throw error
   }
-};
 
-module.exports.PublishCustomerEvent = (data) => {
-  axios.post(`${CUSTOMER_SERVICE_URL}/app-events`, { payload: data });
-};
 
-module.exports.PublishShoppingEvent = (data) => {
-  axios.post(`${SHOPPING_SERVICE_URL}/app-events`, { payload: data });
-};
+}
+
+// publish message
+module.exports.PublishMessage = async (channel, binding_key, message)=>{
+  try {
+    await channel.publish(EXCHANGE_NAME, binding_key, Buffer(message))
+
+  } catch (error) {
+    throw error
+  }
+
+}
+
+// subscribe message
+module.exports.SubscribeMessage = async (channel, service, binding_key)=>{
+  const QUEUE_NAME = "QUEUE_NAME"
+  try {
+
+    const appQueue = await channel.assertQueue(QUEUE_NAME);
+    channel.bindQueue(appQueue.queue, EXCHANGE_NAME,binding_key)
+    channel.cosume(appQueue.queue, (data) =>{
+      console.log("received data");
+      console.log(data.content.toString());
+      channel.ack(data)
+      
+      
+    })
+  } catch (error) {
+    
+  }
+
+}
