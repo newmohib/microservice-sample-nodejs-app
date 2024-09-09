@@ -1,8 +1,14 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const axios = require("axios");
+const amqplib = require("amqplib");
 
-const { APP_SECRET, CUSTOMER_SERVICE_URL } = require("../config");
+const {
+  APP_SECRET,
+  MESSAGE_BROKER_URL,
+  EXCHANGE_NAME,
+  QUEUE_NAME,
+  CUSTOMER_BINDING_KEY
+} = require("../config");
 
 //Utility functions
 module.exports.GenerateSalt = async () => {
@@ -51,10 +57,65 @@ module.exports.FormateData = (data) => {
   }
 };
 
-module.exports.PublishCustomerEvent = (data) => {
-  axios.post(`${CUSTOMER_SERVICE_URL}/app-events`, { payload: data });
-};
+// module.exports.PublishCustomerEvent = (data) => {
+//   axios.post(`${CUSTOMER_SERVICE_URL}/app-events`, { payload: data });
+// };
 
 // module.exports.PublishShoppingEvent = (data) => {
 //   axios.post(`${SHOPPING_SERVICE_URL}/app-events`, { payload: data });
 // };
+
+
+
+// ===============Message broker=========
+
+
+// crate a channel
+module.exports.CreateChannel = async ()=>{
+
+  try {
+    const conn = await amqplib.connect(MESSAGE_BROKER_URL);
+    const channel = await conn.createChannel();
+    await channel.assertQueue(EXCHANGE_NAME, 'direct', false);
+    return channel
+    
+  } catch (error) {
+    console.log("CreateChannel error", {error});
+    
+    throw error
+  }
+
+
+}
+
+// publish message
+
+// module.exports.PublishMessage = async (channel, binding_key, message)=>{
+//   try {
+//     await channel.publish(EXCHANGE_NAME, binding_key, Buffer(message))
+
+//   } catch (error) {
+//     throw error
+//   }
+
+// }
+
+// subscribe message
+module.exports.SubscribeMessage = async (channel, service)=>{
+
+  try {
+
+    const appQueue = await channel.assertQueue(QUEUE_NAME);
+    channel.bindQueue(appQueue.queue, EXCHANGE_NAME,CUSTOMER_BINDING_KEY)
+    channel.cosume(appQueue.queue, (data) =>{
+      console.log("received data");
+      console.log(data.content.toString());
+      channel.ack(data)
+      
+      
+    })
+  } catch (error) {
+    
+  }
+
+}
