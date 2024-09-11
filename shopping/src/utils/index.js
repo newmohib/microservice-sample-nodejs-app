@@ -116,6 +116,8 @@ module.exports.SubscribeMessage = async (channel, service) => {
     channel.consume(appQueue.queue, (data) => {
       console.log("Received data in Shopping Service");
       console.log(data.content.toString());
+      service.SubscribeEvents(data.content.toString())
+      
       channel.ack(data); // Acknowledge message after processing
     }, {
       noAck: false // Set to true if you don't want to manually acknowledge messages

@@ -88,6 +88,8 @@ class ShoppingRepository {
     // return await CartModel.deleteMany();
 
     const cart = await CartModel.findOne({ customerId: customerId });
+    console.log({cart});
+    
 
     const { _id } = item;
     console.log({ cart, item }, cart);

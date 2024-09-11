@@ -207,7 +207,9 @@ class CustomerRepository {
 
   async AddOrderToProfile(customerId, order) {
     try {
-      const profile = await CustomerModel.findById(customerId);
+       const profile = await CustomerModel.findById(customerId);
+      console.log({profile});
+      
 
       if (profile) {
         if (profile.orders == undefined) {
@@ -218,6 +220,8 @@ class CustomerRepository {
         profile.cart = [];
 
         const profileResult = await profile.save();
+        console.log("Added to customer order", profileResult);
+        
 
         return profileResult;
       }

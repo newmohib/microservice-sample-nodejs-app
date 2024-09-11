@@ -92,7 +92,7 @@ module.exports.PublishMessage = async (channel, binding_key, message) => {
 };
 
 // Subscribe to messages from the queue
-module.exports.SubscribeMessage = async (channel, service, binding_key) => {
+module.exports.SubscribeMessage = async (channel, service) => {
   // const QUEUE_NAME = "QUEUE_NAME"; // Replace with your actual queue name
 
   try {
@@ -102,12 +102,13 @@ module.exports.SubscribeMessage = async (channel, service, binding_key) => {
     });
 
     // Bind the queue to the exchange with a binding key
-    channel.bindQueue(appQueue.queue, EXCHANGE_NAME, binding_key);
+    channel.bindQueue(appQueue.queue, EXCHANGE_NAME, CUSTOMER_BINDING_KEY);
 
     // Consume messages from the queue
     channel.consume(appQueue.queue, (data) => {
       console.log("Received data into Customer Service");
       console.log(data.content.toString());
+      service.SubscribeEvents(data.content.toString())
       channel.ack(data); // Acknowledge message after processing
     }, {
       noAck: false // Set to true if you don't want to manually acknowledge messages
