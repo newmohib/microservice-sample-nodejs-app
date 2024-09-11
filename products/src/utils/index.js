@@ -9,6 +9,7 @@ const {
   // SHOPPING_SERVICE_URL,
   MESSAGE_BROKER_URL,
   EXCHANGE_NAME,
+  QUEUE_NAME
 } = require("../config");
 
 //Utility functions
@@ -99,7 +100,7 @@ module.exports.PublishMessage = async (channel, binding_key, message) => {
 
 // Subscribe to messages from the queue
 module.exports.SubscribeMessage = async (channel, service, binding_key) => {
-  const QUEUE_NAME = "QUEUE_NAME"; // Replace with your actual queue name
+  // const QUEUE_NAME = "QUEUE_NAME"; // Replace with your actual queue name
 
   try {
     // Assert a queue
