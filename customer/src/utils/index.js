@@ -62,8 +62,6 @@ module.exports.FormateData = (data) => {
 
 
 
-
-
 // ===============Message broker=========
 // Create a channel
 module.exports.CreateChannel = async () => {
@@ -81,20 +79,20 @@ module.exports.CreateChannel = async () => {
   }
 };
 
-// // Publish message to the exchange
-// module.exports.PublishMessage = async (channel, binding_key, message) => {
-//   try {
-//     // Publish message to the specified exchange
-//     await channel.publish(EXCHANGE_NAME, binding_key, Buffer.from(message));
-//     console.log("Data is sent for", message);
-//   } catch (error) {
-//     console.log("PublishMessage error", { error });
-//     throw error;
-//   }
-// };
+// Publish message to the exchange
+module.exports.PublishMessage = async (channel, binding_key, message) => {
+  try {
+    // Publish message to the specified exchange
+    await channel.publish(EXCHANGE_NAME, binding_key, Buffer.from(message));
+    console.log("Data is sent for", message);
+  } catch (error) {
+    console.log("PublishMessage error", { error });
+    throw error;
+  }
+};
 
 // Subscribe to messages from the queue
-module.exports.SubscribeMessage = async (channel, service) => {
+module.exports.SubscribeMessage = async (channel, service, binding_key) => {
   // const QUEUE_NAME = "QUEUE_NAME"; // Replace with your actual queue name
 
   try {
@@ -104,11 +102,11 @@ module.exports.SubscribeMessage = async (channel, service) => {
     });
 
     // Bind the queue to the exchange with a binding key
-    channel.bindQueue(appQueue.queue, EXCHANGE_NAME, CUSTOMER_BINDING_KEY);
+    channel.bindQueue(appQueue.queue, EXCHANGE_NAME, binding_key);
 
     // Consume messages from the queue
     channel.consume(appQueue.queue, (data) => {
-      console.log("Received data");
+      console.log("Received data into Customer Service");
       console.log(data.content.toString());
       channel.ack(data); // Acknowledge message after processing
     }, {

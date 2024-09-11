@@ -114,7 +114,7 @@ module.exports = (app, channel) => {
       PublishMessage(channel,CUSTOMER_BINDING_KEY,JSON.stringify(data) )
       PublishMessage(channel,SHOPPING_BINDING_KEY,JSON.stringify(data) )
 
-      PublishShoppingEvent(data);
+      // PublishShoppingEvent(data);
       const responseResult = {
         product: data.data.product,
         units: data.data.qty,
