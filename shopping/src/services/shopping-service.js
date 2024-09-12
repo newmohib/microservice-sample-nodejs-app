@@ -86,9 +86,11 @@ class ShoppingService {
       if (order) {
         const payload = {
           data: { userId, order },
-          event: event,
+          event,
         };
-        return FormateData(payload);
+
+        // return FormateData(payload);
+        return payload;
       } else {
         return FormateData("No Order  is available");
       }
